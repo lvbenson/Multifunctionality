@@ -6,12 +6,15 @@ import numpy as np
 import matplotlib.pyplot as plt
 import sys
 
-viz = int(sys.argv[1])
-savedata = int(sys.argv[2])
-number = int(sys.argv[3])
+# =============================================================================
+# viz = int(sys.argv[1])
+# savedata = int(sys.argv[2])
+# number = int(sys.argv[3])
+# 
 
 MaxFit = 0.627 # http://mypage.iu.edu/~rdbeer/Papers/Beer1999a.pdf
-
+ 
+ 
 # ANN Params
 nI = 3
 nH1 = 5
@@ -23,8 +26,6 @@ WeightRange = 15.0 #/nH1
 BiasRange = 15.0 #/nH1
 
 noisestd = 0.0 #0.01
-# Slides from Nathan about Ethics and AI for C105
-# Explainable AI --- Ethics
 
 # Fitness initialization ranges
 trials_theta = 3
@@ -42,8 +43,9 @@ genesize = (nI*nH1) + (nH1*nH2) + (nH1*nO) + nH1 + nH2 + nO
 recombProb = 0.5
 mutatProb = 0.05 #0.05
 demeSize = popsize #2
-generations = 150 #50
+generations = 25 #50
 boundaries = 0 #1
+tournaments = generations * popsize
 
 # Fitness function
 def fitnessFunction(genotype):
@@ -72,7 +74,7 @@ def plot(g):
     out_hist = np.zeros((DurationSteps,nO))
     velocity = np.zeros(DurationSteps)
     time = np.arange(0,duration,stepsize)
-    t = 0.0
+    #t = 0.0
     for i in range(DurationSteps):
         nn.step(body.state())
         body.step(stepsize, nn.output() + np.random.normal(0.0,noisestd))
@@ -90,12 +92,12 @@ def plot(g):
 
 # Evolve and visualize fitness over generations
 ga = mga.Microbial(fitnessFunction, popsize, genesize, recombProb, mutatProb, demeSize, generations, boundaries)
-ga.run()
+ga.run(tournaments)
 af,bf,genotype = ga.fitStats()
 plot(genotype)
 
 # Get best evolved network and show its activity
-# af,bf,bi = ga.fitStats()
+af,bf,bi = ga.fitStats()
 #
 # ## Instead of plotting, save data to file
 # if viz:
