@@ -8,15 +8,20 @@ import numpy as np
 import matplotlib.pyplot as plt
 import sys
 
-#viz = int(sys.argv[1])
-#savedata = int(sys.argv[2])
+#sys.argv[0] is the name of the script
+
+
+
+
+##viz = int(sys.argv[1])
+#savedata = int(sys.argv[3])
 #number = int(sys.argv[3])
 #viz = 1
 #savedata = 0
 #number = 0
 
 # ANN Params
-nI = 3+4
+nI = 3+4+3
 nH1 = 5 #20
 nH2 = 5 #10
 nO = 1
@@ -37,6 +42,7 @@ time_CP = np.arange(0.0,duration_CP,stepsize_CP)
 time_LW = np.arange(0.0,duration_LW,stepsize_LW)
 
 MaxFit = 0.627 #Leggedwalker
+
 
 # Fitness initialization ranges
 #Inverted Pendulum
@@ -65,8 +71,6 @@ omega_range_LW = np.linspace(-1.0, 1.0, num=trials_omega_LW)
 total_trials_LW = trials_theta * trials_omega_LW
 
 
-
-
 # EA Params
 popsize = 25
 genesize = (nI*nH1) + (nH1*nH2) + (nH1*nO) + nH1 + nH2 + nO
@@ -89,7 +93,7 @@ def fitnessFunction(genotype):
             body.theta = theta
             body.theta_dot = theta_dot
             for t in time_IP:
-                nn.step(np.concatenate((body.state(),np.zeros(4))))
+                nn.step(np.concatenate((body.state(),np.zeros(4),np.zeros(3))))
                 f = body.step(stepsize_IP, nn.output() + np.random.normal(0.0,noisestd))
                 fit += f
     fitness1 = fit/(duration_IP*total_trials_IP)
@@ -106,7 +110,7 @@ def fitnessFunction(genotype):
                     body.x = x
                     body.x_dot = x_dot
                     for t in time_CP:
-                        nn.step(np.concatenate((np.zeros(3),body.state())))
+                        nn.step(np.concatenate((np.zeros(3),body.state(),np.zeros(3))))
                         f = body.step(stepsize_CP, nn.output() + np.random.normal(0.0,noisestd))
                         fit += f
     fitness2 = fit/(duration_CP*total_trials_CP)
@@ -115,12 +119,12 @@ def fitnessFunction(genotype):
     body = leggedwalker.LeggedAgent(0.0,0.0)
     fit = 0.0
     for theta in theta_range_LW:
-        for omega in omega_range_LW:
+        for omega in omega_range_LW:   
             body.reset()
             body.angle = theta
             body.omega = omega
             for t in time_LW:
-                nn.step(np.concatenate((body.state(),np.zeros(5))))
+                nn.step(np.concatenate((np.zeros(3),np.zeros(4),body.state())))
                 #nn.step(body.state())
                 body.step(stepsize_LW, nn.output() + np.random.normal(0.0,noisestd))
             fit += body.cx/duration_LW
@@ -136,16 +140,35 @@ ga.run(tournaments)
 
 # Get best evolved network and show its activity
 af,bf,bi = ga.fitStats()
+
+np.save(ga.bestHistory)
+np.save(ga.avgHistory)
+#np.save("theta"+str(number)+".npy",theta_hist)
+#np.save("fitmap"+str(number)+".npy",fitmap)
+np.save(bi)
+
+
+
+
+
+
+
+
 #theta_hist, fitmap = evaluate(bi)
 
 ## Instead of plotting, save data to file
-if viz:
-    ga.showFitness()
-    ga.showAge()
-    #plt.plot(theta_hist.T)
+# =============================================================================
+# if viz:
+#     ga.showFitness()
+#     ga.showAge()
+#     #plt.plot(theta_hist.T)
+# =============================================================================
     #plt.show()
-if savedata:
-    np.save("bestfit"+str(number)+".npy",ga.bestHistory)
-    np.save("avgfit"+str(number)+".npy",ga.avgHistory)
-    #np.save("theta"+str(number)+".npy",theta_hist)
-    np.save("bestgenotype"+str(number)+".npy",bi)
+# =============================================================================
+# if savedata:
+#     np.save("bestfit"+str(number)+".npy",ga.bestHistory)
+#     np.save("avgfit"+str(number)+".npy",ga.avgHistory)
+#     #np.save("theta"+str(number)+".npy",theta_hist)
+#     np.save("bestgenotype"+str(number)+".npy",bi)
+# 
+# =============================================================================
