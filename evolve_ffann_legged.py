@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 import sys
 
 # =============================================================================
-# viz = int(sys.argv[1])
+#viz = int(sys.argv[1])
 # savedata = int(sys.argv[2])
 # number = int(sys.argv[3])
 # 
@@ -20,7 +20,7 @@ nI = 3
 nH1 = 5
 nH2 = 5
 nO = 3
-duration = 220.0
+duration = 30.0
 stepsize = 0.1
 WeightRange = 15.0 #/nH1
 BiasRange = 15.0 #/nH1
@@ -38,12 +38,12 @@ time = np.arange(0.0,duration,stepsize)
 DurationSteps = int(duration/stepsize)
 
 # EA Params
-popsize = 50
+popsize = 20
 genesize = (nI*nH1) + (nH1*nH2) + (nH1*nO) + nH1 + nH2 + nO
 recombProb = 0.5
 mutatProb = 0.05 #0.05
 demeSize = popsize #2
-generations = 25 #50
+generations = 10 #50
 boundaries = 0 #1
 tournaments = generations * popsize
 
@@ -100,8 +100,8 @@ plot(genotype)
 af,bf,bi = ga.fitStats()
 #
 # ## Instead of plotting, save data to file
-# if viz:
-#     ga.showFitness()
+#if viz:
+#    ga.showFitness()
 # if savedata:
 #     np.save("bestfit"+str(number)+".npy",ga.bestHistory)
 #     np.save("avgfit"+str(number)+".npy",ga.avgHistory)
