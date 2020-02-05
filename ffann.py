@@ -16,7 +16,7 @@ def relu(x):
 class ANN:
 
     def __init__(self, NIU, NH1U, NH2U, NOU):
-        self.nI = NIU
+        self.nI = NIU #input
         self.nH1 = NH1U
         self.nH2 = NH2U
         self.nO = NOU
@@ -56,29 +56,29 @@ class ANN:
 #             self.bO[i] = genotype[k]*(std/self.nO)
 #             k += 1
 # 
-#     def setParameters(self, genotype, WeightRange, BiasRange):
-#         k = 0
-#         for i in range(self.nI):
-#             for j in range(self.nH1):
-#                 self.wIH1[i][j] = genotype[k]*WeightRange
-#                 k += 1
-#         for i in range(self.nH1):
-#             for j in range(self.nH2):
-#                 self.wH1H2[i][j] = genotype[k]*WeightRange
-#                 k += 1
-#         for i in range(self.nH2):
-#             for j in range(self.nO):
-#                 self.wH2O[i][j] = genotype[k]*WeightRange
-#                 k += 1
-#         for i in range(self.nH1):
-#             self.bH1[i] = genotype[k]*BiasRange
-#             k += 1
-#         for i in range(self.nH2):
-#             self.bH2[i] = genotype[k]*BiasRange
-#             k += 1
-#         for i in range(self.nO):
-#             self.bO[i] = genotype[k]*BiasRange
-#             k += 1
+    def setParameters(self, genotype, WeightRange, BiasRange):
+         k = 0
+         for i in range(self.nI):
+             for j in range(self.nH1):
+                 self.wIH1[i][j] = genotype[k]*WeightRange
+                 k += 1
+         for i in range(self.nH1):
+             for j in range(self.nH2):
+                 self.wH1H2[i][j] = genotype[k]*WeightRange
+                 k += 1
+         for i in range(self.nH2):
+             for j in range(self.nO):
+                 self.wH2O[i][j] = genotype[k]*WeightRange
+                 k += 1
+         for i in range(self.nH1):
+             self.bH1[i] = genotype[k]*BiasRange
+             k += 1
+         for i in range(self.nH2):
+             self.bH2[i] = genotype[k]*BiasRange
+             k += 1
+         for i in range(self.nO):
+             self.bO[i] = genotype[k]*BiasRange
+             k += 1
 # 
 #     def ablate(self, neuron): # Set outgoing connections to 0
 #         if (neuron<self.nI):
@@ -103,7 +103,10 @@ class ANN:
         return self.OutputActivation
 
     def output(self):
+        #print("output",self.OutputActivation)
+        #print("ffann output",self.OutputActivation*2 - 1)
         return self.OutputActivation*2 - 1
+    
 
     def states(self):
         return np.concatenate((self.Input,self.Hidden1Activation,self.Hidden2Activation,self.OutputActivation))
