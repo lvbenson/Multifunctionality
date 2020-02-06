@@ -69,12 +69,12 @@ total_trials_LW = trials_theta * trials_omega_LW
 
 
 # EA Params
-popsize = 25
+popsize = 30
 genesize = (nI*nH1) + (nH1*nH2) + (nH1*nO) + nH1 + nH2 + nO
 recombProb = 0.5
 mutatProb = 0.05
 demeSize = popsize
-generations = 15
+generations = 20
 boundaries = 0
 tournaments = generations * popsize
 
@@ -91,13 +91,11 @@ def fitnessFunction(genotype):
             body.theta_dot = theta_dot
             for t in time_IP:
                 nn.step(np.concatenate((body.state(),np.zeros(4),np.zeros(3)))) #arrays for inputs for each task 
-               # print("invpend output",nn.output())
                 f = body.step(stepsize_IP, nn.output() + np.random.normal(0.0,noisestd)) #nn.output() is one value, same with stepsize_IP
-                #f = body.step(stepsize_IP, np.concatenate((nn.output()+np.random.normal(0.0,noisestd)),[i for i in range(2)]))
-                #print("invpend output",nn.output())
                 fit += f
     fitness1 = fit/(duration_IP*total_trials_IP)
     fitness1 = (fitness1+7.65)/7 # Normalize to run between 0 and 1
+    
     # Task 2
     body = cartpole.Cartpole()
     fit = 0.0
@@ -111,13 +109,11 @@ def fitnessFunction(genotype):
                     body.x_dot = x_dot
                     for t in time_CP:
                         nn.step(np.concatenate((np.zeros(3),body.state(),np.zeros(3))))
-                        #print("cartpole output",nn.output())
-                        #f = body.step(stepsize_CP, nn.output() + np.random.normal(0.0,noisestd))
                         f = body.step(stepsize_IP,nn.output()+np.random.normal(0.0,noisestd))
-                        #print("cartpole output",nn.output())
                         fit += f
     fitness2 = fit/(duration_CP*total_trials_CP)
     #return fitness1*fitness2
+    
     #Task 3
     body = leggedwalker.LeggedAgent(0.0,0.0)
     fit = 0.0
@@ -129,7 +125,6 @@ def fitnessFunction(genotype):
             for t in time_LW:
                 nn.step(np.concatenate((np.zeros(3),np.zeros(4),body.state())))
                 body.step(stepsize_LW, nn.output() + np.random.normal(0.0,noisestd))
-                #print("leggedwalker output",nn.output())
             fit += body.cx/duration_LW
     fitness3 = (fit/total_trials_LW)/MaxFit
     return fitness1*fitness2*fitness3
@@ -142,9 +137,9 @@ ga.showFitness()
 
 # Get best evolved network and show its activity
 af,bf,bi = ga.fitStats()
-np.save(ga.bestHistory)
-np.save(ga.avgHistory)
-np.save(bi)
+#np.save(ga.avgHistory)
+#np.save(ga.bestHistory)
+#np.save(bi)
 
 
 # Evolve and visualize fitness over generations
