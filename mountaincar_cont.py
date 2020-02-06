@@ -24,7 +24,12 @@ class MountainCarAgent:
 
         self.low_state = np.array([self.min_position, -self.max_speed])
         self.high_state = np.array([self.max_position, self.max_speed])
+        self.position = 0.0
+        self.velocity = 0.0
         
+        
+    def state(self):
+        return np.array([self.position, self.velocity])
         
     def step(self,stepsize,action):
         position = self.state[0]
@@ -43,5 +48,6 @@ class MountainCarAgent:
         else:
             return 0.0
 
-
+    #def state(self):
+    #    return np.array([self.position, self.velocity])
 
