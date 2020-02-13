@@ -5,9 +5,6 @@ import cartpole             #Task 2
 import leggedwalker         #Task 3
 
 import numpy as np
-import matplotlib.pyplot as plt
-import sys
-
 #sys.argv[0] is the name of the script
 
 
@@ -24,7 +21,7 @@ import sys
 nI = 3+4+3
 nH1 = 5 #20
 nH2 = 5 #10
-nO = 1
+nO = 3 #output activation needs to account for 3 outputs in leggedwalker
 WeightRange = 15.0
 BiasRange = 15.0
 
@@ -94,7 +91,10 @@ def fitnessFunction(genotype):
             body.theta_dot = theta_dot
             for t in time_IP:
                 nn.step(np.concatenate((body.state(),np.zeros(4),np.zeros(3)))) #arrays for inputs for each task 
-                #f = body.step(stepsize_IP, np.concatenate((np.zeros(2)),nn.output() + np.random.normal(0.0,noisestd))) #nn.output() is one value, same with stepsize_IP
+               # print("invpend output",nn.output())
+                f = body.step(stepsize_IP, nn.output() + np.random.normal(0.0,noisestd)) #nn.output() is one value, same with stepsize_IP
+                #f = body.step(stepsize_IP, np.concatenate((nn.output()+np.random.normal(0.0,noisestd)),[i for i in range(2)]))
+                #print("invpend output",nn.output())
                 fit += f
     fitness1 = fit/(duration_IP*total_trials_IP)
     fitness1 = (fitness1+7.65)/7 # Normalize to run between 0 and 1
@@ -111,7 +111,10 @@ def fitnessFunction(genotype):
                     body.x_dot = x_dot
                     for t in time_CP:
                         nn.step(np.concatenate((np.zeros(3),body.state(),np.zeros(3))))
-                        #f = body.step(stepsize_CP, np.concatenate((np.zeros(2)),nn.output() + np.random.normal(0.0,noisestd)))
+                        #print("cartpole output",nn.output())
+                        #f = body.step(stepsize_CP, nn.output() + np.random.normal(0.0,noisestd))
+                        f = body.step(stepsize_IP,nn.output()+np.random.normal(0.0,noisestd))
+                        #print("cartpole output",nn.output())
                         fit += f
     fitness2 = fit/(duration_CP*total_trials_CP)
     #return fitness1*fitness2
@@ -126,26 +129,36 @@ def fitnessFunction(genotype):
             for t in time_LW:
                 nn.step(np.concatenate((np.zeros(3),np.zeros(4),body.state())))
                 body.step(stepsize_LW, nn.output() + np.random.normal(0.0,noisestd))
-                #body.step(stepsize_LW, (np.concatenate((leggedwalker.forwardForce,leggedwalker.backwardForce,(nn.output() + np.random.normal(0.0,noisestd))))))
+                #print("leggedwalker output",nn.output())
             fit += body.cx/duration_LW
     fitness3 = (fit/total_trials_LW)/MaxFit
     return fitness1*fitness2*fitness3
 
 
-
-
 # Evolve and visualize fitness over generations
 ga = mga.Microbial(fitnessFunction, popsize, genesize, recombProb, mutatProb, demeSize, generations, boundaries)
 ga.run(tournaments)
+ga.showFitness()
 
 # Get best evolved network and show its activity
 af,bf,bi = ga.fitStats()
-
 np.save(ga.bestHistory)
 np.save(ga.avgHistory)
+np.save(bi)
+
+
+# Evolve and visualize fitness over generations
+#ga = mga.Microbial(fitnessFunction, popsize, genesize, recombProb, mutatProb, demeSize, generations, boundaries)
+#ga.run(tournaments)
+
+# Get best evolved network and show its activity
+#af,bf,bi = ga.fitStats()
+
+#np.save(ga.bestHistory)
+#np.save(ga.avgHistory)
 #np.save("theta"+str(number)+".npy",theta_hist)
 #np.save("fitmap"+str(number)+".npy",fitmap)
-np.save(bi)
+#np.save(bi)
 
 
 
