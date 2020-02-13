@@ -74,7 +74,7 @@ genesize = (nI*nH1) + (nH1*nH2) + (nH1*nO) + nH1 + nH2 + nO
 recombProb = 0.5
 mutatProb = 0.05
 demeSize = popsize
-generations = 3
+generations = 5
 boundaries = 0
 tournaments = generations * popsize
 
@@ -142,10 +142,19 @@ ga.showFitness()
 
 # Get best evolved network and show its activity
 af,bf,bi = ga.fitStats()
-np.save(ga.avgHistory)
-np.save(ga.bestHistory)
+#print(ga.avgHistory)
+#print(ga.bestHistory)
 
-
+ah = ga.avgHistory
+bh = ga.bestHistory
+np.save('average_history',ah)
+np.load('average_history.npy')
+np.save('best_history',bh)
+np.load('best_history.npy')
+#ah.astype(np.int64)
+#bh.astype(np.int64)
+#np.save(ah.astype(np.int64))
+#np.save(bh.astype(np.int64))
 
 #np.save(ga.avgHistory)
 #np.save(ga.bestHistory)
