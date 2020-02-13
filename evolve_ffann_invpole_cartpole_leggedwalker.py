@@ -145,12 +145,14 @@ af,bf,bi = ga.fitStats()
 #print(ga.avgHistory)
 #print(ga.bestHistory)
 
+
+
 ah = ga.avgHistory
 bh = ga.bestHistory
-np.save('average_history',ah)
-np.load('average_history.npy')
-np.save('best_history',bh)
-np.load('best_history.npy')
+np.save('average_history1',ah)
+np.load('average_history1.npy')
+np.save('best_history1',bh)
+np.load('best_history1.npy')
 #ah.astype(np.int64)
 #bh.astype(np.int64)
 #np.save(ah.astype(np.int64))
