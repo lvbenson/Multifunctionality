@@ -21,7 +21,7 @@ import numpy as np
 nI = 3+4+3
 nH1 = 5 #20
 nH2 = 5 #10
-nO = 1 #output activation needs to account for 3 outputs in leggedwalker
+nO = 3 #output activation needs to account for 3 outputs in leggedwalker
 WeightRange = 15.0
 BiasRange = 15.0
 
@@ -90,12 +90,9 @@ def fitnessFunction(genotype):
             body.theta = theta
             body.theta_dot = theta_dot
             for t in time_IP:
-                nn.step(np.concatenate((body.state(),np.zeros(4),np.zeros(3)))) #arrays for inputs for each task 
-                print(body.state())
-                
-                
-                #f = body.step(stepsize_IP, nn.output() + np.random.normal(0.0,noisestd)) #nn.output() is one value, same with stepsize_IP
+                nn.step(np.concatenate((body.state(),np.zeros(4),np.zeros(3)))) #arrays for inputs for each task             
                 f = body.step(stepsize_IP, nn.output())
+                f = body.step(stepsize_IP, np.concatenate(((nn.output() + np.random.normal(0.0,noisestd)),np.zeros(2))))
                 fit += f
     fitness1 = fit/(duration_IP*total_trials_IP)
     fitness1 = (fitness1+7.65)/7 # Normalize to run between 0 and 1
@@ -114,7 +111,8 @@ def fitnessFunction(genotype):
                     for t in time_CP:
                         nn.step(np.concatenate((np.zeros(3),body.state(),np.zeros(3))))
                         #f = body.step(stepsize_IP, nn.output() + np.random.normal(0.0,noisestd))
-                        f = body.step(stepsize_IP, nn.output())
+                        #f = body.step(stepsize_IP, nn.output())
+                        f = body.step(stepsize_CP, np.concatenate(((nn.output() + np.random.normal(0.0,noisestd)),np.zeros(2))))
                         fit += f
     fitness2 = fit/(duration_CP*total_trials_CP)
     #return fitness1*fitness2
@@ -130,7 +128,8 @@ def fitnessFunction(genotype):
             for t in time_LW:
                 nn.step(np.concatenate((np.zeros(3),np.zeros(4),body.state())))
                 #body.step(stepsize_LW, nn.output() + np.random.normal(0.0,noisestd))
-                body.step(stepsize_LW, nn.output())
+                #body.step(stepsize_LW, nn.output())
+                body.step(stepsize_LW, np.concatenate(((nn.output() + np.random.normal(0.0,noisestd)),np.zeros(2))))
             fit += body.cx/duration_LW
     fitness3 = (fit/total_trials_LW)/MaxFit
     return fitness1*fitness2*fitness3
@@ -143,8 +142,11 @@ ga.showFitness()
 
 # Get best evolved network and show its activity
 af,bf,bi = ga.fitStats()
-print("avg history",ga.avgHistory)
-print("best history",ga.bestHistory)
+np.save(ga.avgHistory)
+np.save(ga.bestHistory)
+
+
+
 #np.save(ga.avgHistory)
 #np.save(ga.bestHistory)
 #np.save(bi)
