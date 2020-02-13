@@ -5,7 +5,9 @@ import cartpole             #Task 2
 import leggedwalker         #Task 3
 
 import numpy as np
+import sys
 #sys.argv[0] is the name of the script
+number = 0
 
 
 
@@ -69,12 +71,12 @@ total_trials_LW = trials_theta * trials_omega_LW
 
 
 # EA Params
-popsize = 5
+popsize = 100
 genesize = (nI*nH1) + (nH1*nH2) + (nH1*nO) + nH1 + nH2 + nO
 recombProb = 0.5
 mutatProb = 0.05
 demeSize = popsize
-generations = 5
+generations = 100
 boundaries = 0
 tournaments = generations * popsize
 
@@ -96,6 +98,9 @@ def fitnessFunction(genotype):
                 fit += f
     fitness1 = fit/(duration_IP*total_trials_IP)
     fitness1 = (fitness1+7.65)/7 # Normalize to run between 0 and 1
+    #save data from fitnesses of tasks 
+    np.save('Fitness_invpend',fitness1)
+    np.load('Fitness_invpend.npy')
     
     # Task 2
     body = cartpole.Cartpole()
@@ -116,6 +121,8 @@ def fitnessFunction(genotype):
                         fit += f
     fitness2 = fit/(duration_CP*total_trials_CP)
     #return fitness1*fitness2
+    np.save('Fitness_cartpole',fitness2)
+    np.load('Fitness_cartpole.npy')
     
     #Task 3
     body = leggedwalker.LeggedAgent(0.0,0.0)
@@ -132,6 +139,8 @@ def fitnessFunction(genotype):
                 body.step(stepsize_LW, np.concatenate(((nn.output() + np.random.normal(0.0,noisestd)),np.zeros(2))))
             fit += body.cx/duration_LW
     fitness3 = (fit/total_trials_LW)/MaxFit
+    np.save('Fitness_legged',fitness3)
+    np.load('Fitness_legged.npy')
     return fitness1*fitness2*fitness3
 
 
@@ -149,14 +158,38 @@ af,bf,bi = ga.fitStats()
 
 ah = ga.avgHistory
 bh = ga.bestHistory
-np.save('average_history1',ah)
-np.load('average_history1.npy')
-np.save('best_history1',bh)
-np.load('best_history1.npy')
-#ah.astype(np.int64)
-#bh.astype(np.int64)
-#np.save(ah.astype(np.int64))
-#np.save(bh.astype(np.int64))
+
+
+np.save('average_history',ah)
+np.load('average_history.npy')
+np.save('best_history',bh)
+np.load('best_history.npy')
+
+
+#np.save("bestfit"+str(number)+".npy",ga.bestHistory)
+#np.save("avgfit"+str(number)+".npy",ga.avgHistory)
+
+
+
+#Experiment_1avgmean = np.mean(np.array(ah),axis=0)
+#Experiment_1bestmean = np.mean(np.array(bh),axis=0)
+
+#Exp1 = np.column_stack((Experiment_1avgmean, Experiment_1bestmean)
+#np.savetxt('Experiment1.csv',Exp1)
+#header = "Ex1_avg_mean, Ex1_best_mean"
+#np.savetxt('Ex1Total.csv', Exp1, delimiter=',')
+
+
+#np.save('average_history1',ah)
+#np.load('average_history1.npy')
+#np.save('best_history1',bh)
+#np.load('best_history1.npy')
+
+#f=open("average_history2.txt", "a+")
+#f.write(ah)
+
+#nf=open("best_history2.txt","a+")
+#f.write(bh)
 
 #np.save(ga.avgHistory)
 #np.save(ga.bestHistory)
