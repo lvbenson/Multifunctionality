@@ -71,12 +71,12 @@ total_trials_LW = trials_theta * trials_omega_LW
 
 
 # EA Params
-popsize = 100
+popsize = 5
 genesize = (nI*nH1) + (nH1*nH2) + (nH1*nO) + nH1 + nH2 + nO
 recombProb = 0.5
 mutatProb = 0.05
 demeSize = popsize
-generations = 100
+generations = 5
 boundaries = 0
 tournaments = generations * popsize
 
@@ -93,14 +93,14 @@ def fitnessFunction(genotype):
             body.theta_dot = theta_dot
             for t in time_IP:
                 nn.step(np.concatenate((body.state(),np.zeros(4),np.zeros(3)))) #arrays for inputs for each task             
-                f = body.step(stepsize_IP, nn.output())
+                #f = body.step(stepsize_IP, nn.output() + np.random.normal(0.0,noisestd))
                 f = body.step(stepsize_IP, np.concatenate(((nn.output() + np.random.normal(0.0,noisestd)),np.zeros(2))))
                 fit += f
     fitness1 = fit/(duration_IP*total_trials_IP)
     fitness1 = (fitness1+7.65)/7 # Normalize to run between 0 and 1
     #save data from fitnesses of tasks 
     np.save('Fitness_invpend',fitness1)
-    np.load('Fitness_invpend.npy')
+    #np.load('Fitness_invpend.npy')
     
     # Task 2
     body = cartpole.Cartpole()
@@ -115,14 +115,14 @@ def fitnessFunction(genotype):
                     body.x_dot = x_dot
                     for t in time_CP:
                         nn.step(np.concatenate((np.zeros(3),body.state(),np.zeros(3))))
-                        #f = body.step(stepsize_IP, nn.output() + np.random.normal(0.0,noisestd))
+                        f = body.step(stepsize_IP, nn.output() + np.random.normal(0.0,noisestd))
                         #f = body.step(stepsize_IP, nn.output())
                         f = body.step(stepsize_CP, np.concatenate(((nn.output() + np.random.normal(0.0,noisestd)),np.zeros(2))))
                         fit += f
     fitness2 = fit/(duration_CP*total_trials_CP)
     #return fitness1*fitness2
-    np.save('Fitness_cartpole',fitness2)
-    np.load('Fitness_cartpole.npy')
+    #np.save('Fitness_cartpole',fitness2)
+    #np.load('Fitness_cartpole.npy')
     
     #Task 3
     body = leggedwalker.LeggedAgent(0.0,0.0)
@@ -134,13 +134,13 @@ def fitnessFunction(genotype):
             body.omega = omega
             for t in time_LW:
                 nn.step(np.concatenate((np.zeros(3),np.zeros(4),body.state())))
-                #body.step(stepsize_LW, nn.output() + np.random.normal(0.0,noisestd))
+                body.step(stepsize_LW, nn.output() + np.random.normal(0.0,noisestd))
                 #body.step(stepsize_LW, nn.output())
-                body.step(stepsize_LW, np.concatenate(((nn.output() + np.random.normal(0.0,noisestd)),np.zeros(2))))
+                #body.step(stepsize_LW, np.concatenate(((nn.output() + np.random.normal(0.0,noisestd)),np.zeros(2))))
             fit += body.cx/duration_LW
     fitness3 = (fit/total_trials_LW)/MaxFit
     np.save('Fitness_legged',fitness3)
-    np.load('Fitness_legged.npy')
+    #np.load('Fitness_legged.npy')
     return fitness1*fitness2*fitness3
 
 
