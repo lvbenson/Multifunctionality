@@ -17,7 +17,7 @@ import numpy as np
 nI = 3+4+3
 nH1 = 5 #20
 nH2 = 5 #10
-nO = 3 #output activation needs to account for 3 outputs in leggedwalker
+nO = 3+1+1 #output activation needs to account for 3 outputs in leggedwalker
 WeightRange = 15.0
 BiasRange = 15.0
 
@@ -92,7 +92,7 @@ def fitnessFunction(genotype):
     fitness1 = fit/(duration_IP*total_trials_IP)
     fitness1 = (fitness1+7.65)/7 # Normalize to run between 0 and 1
     #save data from fitnesses of tasks 
-    np.save('Fitness_invpend',fitness1)
+    #np.save('Fitness_invpend',fitness1)
     
     # Task 2
     body = cartpole.Cartpole()
@@ -112,7 +112,7 @@ def fitnessFunction(genotype):
                         f = body.step(stepsize_CP, np.concatenate(((nn.output() + np.random.normal(0.0,noisestd)),np.zeros(2))))
                         fit += f
     fitness2 = fit/(duration_CP*total_trials_CP)
-    np.save('Fitness_cartpole',fitness2)
+    #np.save('Fitness_cartpole',fitness2)
     
     #Task 3
     body = leggedwalker.LeggedAgent(0.0,0.0)
@@ -127,5 +127,5 @@ def fitnessFunction(genotype):
                 body.step(stepsize_LW, nn.output() + np.random.normal(0.0,noisestd))
             fit += body.cx/duration_LW
     fitness3 = (fit/total_trials_LW)/MaxFit
-    np.save('Fitness_legged',fitness3)
+    #np.save('Fitness_legged',fitness3)
     return fitness1*fitness2*fitness3
