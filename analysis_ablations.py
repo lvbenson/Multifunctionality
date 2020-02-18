@@ -1,15 +1,16 @@
 import ffann                #Controller
 import invpend              #Task
 import cartpole             #Task
+import leggedwalker         #Task
 
 import numpy as np
 import matplotlib.pyplot as plt
 
 # ANN Params
-nI = 3+4
+nI = 3+4+3
 nH1 = 5
 nH2 = 5
-nO = 1
+nO = 3+1+1
 WeightRange = 15.0
 BiasRange = 15.0
 
@@ -20,16 +21,24 @@ duration_IP = 10
 stepsize_IP = 0.05
 duration_CP = 50
 stepsize_CP = 0.05
+duration_LW = 220.0
+stepsize_LW = 0.1
 time_IP = np.arange(0.0,duration_IP,stepsize_IP)
 time_CP = np.arange(0.0,duration_CP,stepsize_CP)
+time_LW = np.arange(0.0,duration_LW,stepsize_LW)
+
+MaxFit = 0.627 #Leggedwalker
+
 
 # Fitness initialization ranges
+#Inverted Pendulum
 trials_theta_IP = 6
 trials_thetadot_IP = 6
 total_trials_IP = trials_theta_IP*trials_thetadot_IP
 theta_range_IP = np.linspace(-np.pi, np.pi, num=trials_theta_IP)
 thetadot_range_IP = np.linspace(-1.0,1.0, num=trials_thetadot_IP)
 
+#Cartpole
 trials_theta_CP = 2
 trials_thetadot_CP = 2
 trials_x_CP = 2
@@ -39,6 +48,14 @@ theta_range_CP = np.linspace(-0.05, 0.05, num=trials_theta_CP)
 thetadot_range_CP = np.linspace(-0.05, 0.05, num=trials_thetadot_CP)
 x_range_CP = np.linspace(-0.05, 0.05, num=trials_x_CP)
 xdot_range_CP = np.linspace(-0.05, 0.05, num=trials_xdot_CP)
+
+#Legged walker 
+trials_theta = 3
+theta_range_LW = np.linspace(-np.pi/6, np.pi/6, num=trials_theta)
+trials_omega_LW = 3
+omega_range_LW = np.linspace(-1.0, 1.0, num=trials_omega_LW)
+total_trials_LW = trials_theta * trials_omega_LW
+
 
 def single_neuron_ablations(genotype):
     nn = ffann.ANN(nI,nH1,nH2,nO)
@@ -81,16 +98,38 @@ def single_neuron_ablations(genotype):
                             fit += f
         fit = fit/(duration_CP*total_trials_CP)
         cp_fit[i]=fit
-    return ip_fit,cp_fit #
+    #Task 3
+    lw_fit = np.zeros(nI+nH1+nH2)
+    body = leggedwalker.LeggedAgent(0.0,0.0)
+    for i in range(nI+nH1+nH2):
+        fit = 0.0
+        for theta in theta_range_LW:
+            for omega in omega_range_LW:
+                body.reset()
+                body.angle = theta
+                body.omega = omega
+                for t in time_LW:
+                    nn.step(np.concatenate((np.zeros(3),np.zeros(4),body.state())))
+                    body.step(stepsize_LW, np.array(nn.output()[2:5]))
+                    fit += body.cx/duration_LW
+        fit = (fit/total_trials_LW)/MaxFit
+        lw_fit[i]=fit
+        
+        
+        
+    return ip_fit,cp_fit,lw_fit
 
 for ind in range(10):
     print(ind)
     bi = np.load("EF01/bestgenotype"+str(ind)+".npy")
-    ip,cp = single_neuron_ablations(bi)
+    bi = np.load("best_individual_"+str(id)+".npy")
+    ip,cp,lw = single_neuron_ablations(bi)
     np.save("cp_"+str(ind)+".npy",cp)
     np.save("ip_"+str(ind)+".npy",ip)
+    np.save("lw_"+str(ind)+".npy",lw)
     plt.plot(ip[7:12],cp[7:12],'o')
     plt.plot(ip[12:17],cp[12:17],'x')
+    #plt.plot(ip[17:22],)
     plt.xlabel("Inv. Pend.")
     plt.ylabel("Cart Pole")
     plt.show()
