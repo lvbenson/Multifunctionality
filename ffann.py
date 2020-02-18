@@ -79,22 +79,21 @@ class ANN:
          for i in range(self.nO):
              self.bO[i] = genotype[k]*BiasRange
              k += 1
-# 
-#     def ablate(self, neuron): # Set outgoing connections to 0
-#         if (neuron<self.nI):
-#             i = neuron
-#             for j in range(self.nH1):
-#                 self.wIH1[i][j] = 0.0
-#         if (neuron >= self.nI and neuron < self.nI+self.nH1):
-#             i = neuron-self.nI
-#             for j in range(self.nH2):
-#                 self.wH1H2[i][j] = 0.0
-#         if (neuron >= self.nI+self.nH1 and neuron < self.nI+self.nH1+self.nH2):
-#             i = neuron-(self.nI+self.nH1)
-#             for j in range(self.nO):
-#                 self.wH2O[i][j] = 0.0
-# =============================================================================
-
+ 
+    def ablate(self, neuron): # Set outgoing connections to 0
+        if (neuron<self.nI):
+            i = neuron
+            for j in range(self.nH1):
+                self.wIH1[i][j] = 0.0
+        if (neuron >= self.nI and neuron < self.nI+self.nH1):
+            i = neuron-self.nI
+            for j in range(self.nH2):
+                self.wH1H2[i][j] = 0.0
+        if (neuron >= self.nI+self.nH1 and neuron < self.nI+self.nH1+self.nH2):
+            i = neuron-(self.nI+self.nH1)
+            for j in range(self.nO):
+                self.wH2O[i][j] = 0.0
+                
     def step(self,Input):
         self.Input = np.array(Input)
         self.Hidden1Activation = relu(np.dot(self.Input.T,self.wIH1)+self.bH1)
