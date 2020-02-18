@@ -86,8 +86,7 @@ for network in range(networks):
         ga = mga.Microbial(fitnessFunction, popsize, genesize, recombProb, mutatProb, demeSize, generations, boundaries)
         ga.run(tournaments)
         avghist.append(ga.avgHistory)
-        besthist.append(ga.bestHistory)
-    reps_best = np.mean(np.array(besthist),axis=0)
+        reps_best = np.mean(np.array(besthist),axis=0)
     reps_average = np.mean(np.array(avghist),axis=0)
     plot_list_ah.append(reps_best)
     plot_list_bh.append(reps_average)
@@ -95,7 +94,7 @@ for network in range(networks):
 #print('ah list',plot_list_ah)
 #print('bh list',plot_list_bh)    
 np.save('ah_list',plot_list_ah)
-np.save('ah_list',plot_list_ah)
+np.save('bh_list',plot_list_bh)
     
 plt.figure()
 for i in plot_list_ah:
