@@ -7,7 +7,7 @@ import leggedwalker         #Task 3
 import numpy as np
 import sys
 
-id = int(sys.argv[1])
+#id = int(sys.argv[1])
 
 # ANN Params
 nI = 3+4+3
@@ -52,20 +52,21 @@ x_range_CP = np.linspace(-0.05, 0.05, num=trials_x_CP)
 xdot_range_CP = np.linspace(-0.05, 0.05, num=trials_xdot_CP)
 
 #Legged walker
-trials_theta = 3
-theta_range_LW = np.linspace(-np.pi/6, np.pi/6, num=trials_theta)
+trials_theta_LW = 3
+theta_range_LW = np.linspace(-np.pi/6, np.pi/6, num=trials_theta_LW)
 trials_omega_LW = 3
 omega_range_LW = np.linspace(-1.0, 1.0, num=trials_omega_LW)
-total_trials_LW = trials_theta * trials_omega_LW
+total_trials_LW = trials_theta_LW * trials_omega_LW
 
 # EA Params
-popsize = 50
+popsize = 2
 genesize = (nI*nH1) + (nH1*nH2) + (nH1*nO) + nH1 + nH2 + nO # 115 parameters
 recombProb = 0.5
 mutatProb = 0.01 # 1/genesize # 1/g = 0.0086 we can make it 0.01 because with 1/g, avg seemed to trail close to best.
 demeSize = popsize
-generations = 300 # With 150 (17hours), lots of progress, but more possible easily (with 300, 34hours);
+generations = 2 # With 150 (17hours), lots of progress, but more possible easily (with 300, 34hours);
 boundaries = 0
+tournaments = generations * popsize
 
 # Fitness function
 def fitnessFunction(genotype):
@@ -119,12 +120,19 @@ def fitnessFunction(genotype):
 
 # Evolve and visualize fitness over generations
 ga = mga.Microbial(fitnessFunction, popsize, genesize, recombProb, mutatProb, demeSize, generations, boundaries)
-ga.run()
+ga.run(tournaments)
 ga.showFitness()
 
 # Get best evolved network and show its activity
 af,bf,bi = ga.fitStats()
 
-np.save('average_history_'+str(id)+'.npy',ga.avgHistory)
-np.save('best_history_'+str(id)+'.npy',ga.bestHistory)
-np.save('best_individual_'+str(id)+'.npy',bi)
+np.save('average_history', ga.avgHistory)
+np.save('best_history', ga.bestHistory)
+np.save('best_ind', bi)
+
+# =============================================================================
+# np.save('average_history_'+str(id)+'.npy',ga.avgHistory)
+# np.save('best_history_'+str(id)+'.npy',ga.bestHistory)
+# np.save('best_individual_'+str(id)+'.npy',bi)
+# 
+# =============================================================================
