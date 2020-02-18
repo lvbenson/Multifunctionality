@@ -5,6 +5,8 @@ import leggedwalker         #Task
 
 import numpy as np
 import matplotlib.pyplot as plt
+import pandas as pd
+import seaborn as sns
 
 # ANN Params
 nI = 3+4+3
@@ -50,11 +52,11 @@ x_range_CP = np.linspace(-0.05, 0.05, num=trials_x_CP)
 xdot_range_CP = np.linspace(-0.05, 0.05, num=trials_xdot_CP)
 
 #Legged walker 
-trials_theta = 3
-theta_range_LW = np.linspace(-np.pi/6, np.pi/6, num=trials_theta)
+trials_theta_LW = 3
+theta_range_LW = np.linspace(-np.pi/6, np.pi/6, num=trials_theta_LW)
 trials_omega_LW = 3
 omega_range_LW = np.linspace(-1.0, 1.0, num=trials_omega_LW)
-total_trials_LW = trials_theta * trials_omega_LW
+total_trials_LW = trials_theta_LW*trials_omega_LW
 
 
 def single_neuron_ablations(genotype):
@@ -62,7 +64,7 @@ def single_neuron_ablations(genotype):
     # Task 1
     ip_fit = np.zeros(nI+nH1+nH2)
     body = invpend.InvPendulum()
-    for i in range(nI+nH1+nH2):
+    for i in range(nI+nH1+nH2): #iterates through each neuron (20 neurons)
         fit = 0.0
         nn.setParameters(genotype,WeightRange,BiasRange)
         nn.ablate(i)
@@ -71,12 +73,13 @@ def single_neuron_ablations(genotype):
                 body.theta = theta
                 body.theta_dot = theta_dot
                 for t in time_IP:
-                    nn.step(np.concatenate((body.state(),np.zeros(4))))
-                    f = body.step(stepsize_IP, nn.output() + np.random.normal(0.0,noisestd))
+                    nn.step(np.concatenate((body.state(),np.zeros(4),np.zeros(3))))
+                    f = body.step(stepsize_IP, np.array([nn.output()[0]]))
                     fit += f
         fit = fit/(duration_IP*total_trials_IP)
         fit = (fit+7.65)/7 # Normalize to run between 0 and 1
         ip_fit[i]=fit
+        
     # Task 2
     cp_fit = np.zeros(nI+nH1+nH2)
     body = cartpole.Cartpole()
@@ -93,8 +96,8 @@ def single_neuron_ablations(genotype):
                         body.x = x
                         body.x_dot = x_dot
                         for t in time_CP:
-                            nn.step(np.concatenate((np.zeros(3),body.state())))
-                            f = body.step(stepsize_CP, nn.output() + np.random.normal(0.0,noisestd))
+                            nn.step(np.concatenate((np.zeros(3),body.state(),np.zeros(3))))
+                            f = body.step(stepsize_CP, np.array([nn.output()[1]]))
                             fit += f
         fit = fit/(duration_CP*total_trials_CP)
         cp_fit[i]=fit
@@ -103,6 +106,8 @@ def single_neuron_ablations(genotype):
     body = leggedwalker.LeggedAgent(0.0,0.0)
     for i in range(nI+nH1+nH2):
         fit = 0.0
+        nn.setParameters(genotype,WeightRange,BiasRange)
+        nn.ablate(i)
         for theta in theta_range_LW:
             for omega in omega_range_LW:
                 body.reset()
@@ -115,21 +120,19 @@ def single_neuron_ablations(genotype):
         fit = (fit/total_trials_LW)/MaxFit
         lw_fit[i]=fit
         
-        
-        
+   #print('ip fit',ip_fit)
+   #print('cp fit',cp_fit)
+   #print('lw fit',lw_fit)
     return ip_fit,cp_fit,lw_fit
 
-for ind in range(10):
-    print(ind)
-    bi = np.load("EF01/bestgenotype"+str(ind)+".npy")
-    bi = np.load("best_individual_"+str(id)+".npy")
-    ip,cp,lw = single_neuron_ablations(bi)
-    np.save("cp_"+str(ind)+".npy",cp)
-    np.save("ip_"+str(ind)+".npy",ip)
-    np.save("lw_"+str(ind)+".npy",lw)
-    plt.plot(ip[7:12],cp[7:12],'o')
-    plt.plot(ip[12:17],cp[12:17],'x')
-    #plt.plot(ip[17:22],)
-    plt.xlabel("Inv. Pend.")
-    plt.ylabel("Cart Pole")
-    plt.show()
+
+bi = np.load('best_ind.npy')
+ip,cp,lw = single_neuron_ablations(bi)
+
+# 
+# plt.scatter(ip, cp, c=lw,cmap='Greens')
+# plt.colorbar()
+# plt.show()
+# 
+# =============================================================================
+# =============================================================================
