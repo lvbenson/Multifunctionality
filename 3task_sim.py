@@ -8,7 +8,7 @@ Created on Mon Feb 17 12:37:21 2020
 
 #simulates three-task script 
 
-from three_tasks import fitnessFunction
+from evolve import fitnessFunction
 import mga
 import numpy as np
 import matplotlib.pyplot as plt
@@ -17,7 +17,7 @@ import matplotlib.pyplot as plt
 nI = 3+4+3
 nH1 = 5 #20
 nH2 = 5 #10
-nO = 3 #output activation needs to account for 3 outputs in leggedwalker
+nO = 3+1+1 #output activation needs to account for 3 outputs in leggedwalker
 WeightRange = 15.0
 BiasRange = 15.0
 
@@ -65,54 +65,48 @@ total_trials_LW = trials_theta * trials_omega_LW
 
 
 # EA Params
-popsize = 25
+popsize = 300
 genesize = (nI*nH1) + (nH1*nH2) + (nH1*nO) + nH1 + nH2 + nO
 recombProb = 0.5
 mutatProb = 0.05
 demeSize = popsize
-generations = 25
+generations = 300
 boundaries = 0
 tournaments = generations * popsize
 
-networks = 10
-reps = 5
- 
-plot_list_ah = []
-plot_list_bh = []
-for network in range(networks):
-    avghist = []
-    besthist = []
-    for i in range(reps):
-        ga = mga.Microbial(fitnessFunction, popsize, genesize, recombProb, mutatProb, demeSize, generations, boundaries)
-        ga.run(tournaments)
-        avghist.append(ga.avgHistory)
-        reps_best = np.mean(np.array(besthist),axis=0)
-    reps_average = np.mean(np.array(avghist),axis=0)
-    plot_list_ah.append(reps_best)
-    plot_list_bh.append(reps_average)
-    
-#print('ah list',plot_list_ah)
-#print('bh list',plot_list_bh)    
-np.save('ah_list',plot_list_ah)
-np.save('bh_list',plot_list_bh)
+avghist = []
+besthist = []
+best_ind = []
+reps = 15
+
+for r in range(reps):
+    ga = mga.Microbial(fitnessFunction, popsize, genesize, recombProb, mutatProb, demeSize, generations, boundaries)
+    ga.run(tournaments)
+    af,bf,bi = ga.fitStats()
+    avghist.append(ga.avgHistory)
+    besthist.append(ga.bestHistory)
+    best_ind.append(bi)
+
+np.save('avghist',avghist)
+np.save('besthist',besthist)
+np.save('bi',best_ind)
+
     
 plt.figure()
-for i in plot_list_ah:
+for i in avghist:
     plt.plot(i)
     plt.xlabel("Generations")
     plt.ylabel("Fitness")
-    plt.title("Average Fitness, 10 networks")
+    plt.title("Average Fitness, 50 networks")
 plt.show
 
 plt.figure()
-for j in plot_list_bh:
+for j in besthist:
     plt.plot(j)
     plt.xlabel("Generations")
     plt.ylabel("Fitness")
-    plt.title("Best Fitness, 10 networks")
+    plt.title("Best Fitness, 50 networks")
 plt.show
     
-
-
     
     
