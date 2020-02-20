@@ -70,14 +70,14 @@ genesize = (nI*nH1) + (nH1*nH2) + (nH1*nO) + nH1 + nH2 + nO
 recombProb = 0.5
 mutatProb = 0.05
 demeSize = popsize
-generations = 300
+generations = 350
 boundaries = 0
 tournaments = generations * popsize
 
 avghist = []
 besthist = []
 best_ind = []
-reps = 15
+reps = 10
 
 for r in range(reps):
     ga = mga.Microbial(fitnessFunction, popsize, genesize, recombProb, mutatProb, demeSize, generations, boundaries)
@@ -97,7 +97,7 @@ for i in avghist:
     plt.plot(i)
     plt.xlabel("Generations")
     plt.ylabel("Fitness")
-    plt.title("Average Fitness, 50 networks")
+    plt.title("Average Fitness, 10 networks")
 plt.show
 
 plt.figure()
@@ -105,7 +105,7 @@ for j in besthist:
     plt.plot(j)
     plt.xlabel("Generations")
     plt.ylabel("Fitness")
-    plt.title("Best Fitness, 50 networks")
+    plt.title("Best Fitness, 10 networks")
 plt.show
     
     
