@@ -17,15 +17,15 @@ class ANN:
 
     def __init__(self, NIU, NH1U, NH2U, NOU):
         self.nI = NIU #input
-        self.nH1 = NH1U
-        self.nH2 = NH2U
-        self.nO = NOU
-        self.wIH1 = np.zeros((NIU,NH1U))
-        self.wH1H2 = np.zeros((NH1U,NH2U))
-        self.wH2O = np.zeros((NH2U,NOU))
-        self.bH1 = np.zeros(NH1U)
-        self.bH2 = np.zeros(NH2U)
-        self.bO = np.zeros(NOU)
+        self.nH1 = NH1U #hidden layer 1
+        self.nH2 = NH2U #hidden layer 2
+        self.nO = NOU #output
+        self.wIH1 = np.zeros((NIU,NH1U)) #weight input/hidden layer 1
+        self.wH1H2 = np.zeros((NH1U,NH2U)) #weight hidden layer 1/hidden layer 2
+        self.wH2O = np.zeros((NH2U,NOU)) #weight hidden layer 2/output
+        self.bH1 = np.zeros(NH1U) #bias hidden layer 1
+        self.bH2 = np.zeros(NH2U) #bias hidden layer 2
+        self.bO = np.zeros(NOU) #bias output
         self.Hidden1Activation = np.zeros(NH1U)
         self.Hidden2Activation = np.zeros(NH2U)
         self.OutputActivation = np.zeros(NOU)
@@ -81,18 +81,18 @@ class ANN:
              k += 1
  
     def ablate(self, neuron): # Set outgoing connections to 0
-        if (neuron<self.nI):
+        if (neuron<self.nI): #if neuron is an input neuron
             i = neuron
             for j in range(self.nH1):
-                self.wIH1[i][j] = 0.0
-        if (neuron >= self.nI and neuron < self.nI+self.nH1):
+                self.wIH1[i][j] = 0.0 #set every connection from input neuron to hidden layer 1 to 0
+        if (neuron >= self.nI and neuron < self.nI+self.nH1): #if neuron is in nH1
             i = neuron-self.nI
             for j in range(self.nH2):
-                self.wH1H2[i][j] = 0.0
-        if (neuron >= self.nI+self.nH1 and neuron < self.nI+self.nH1+self.nH2):
+                self.wH1H2[i][j] = 0.0 #set every connection from neuron in hidden layer 1 to hidden layer 2 to 0
+        if (neuron >= self.nI+self.nH1 and neuron < self.nI+self.nH1+self.nH2): #if neuron is in nH2
             i = neuron-(self.nI+self.nH1)
             for j in range(self.nO):
-                self.wH2O[i][j] = 0.0
+                self.wH2O[i][j] = 0.0 #set every connection from neuron in hidden layer 2 to output to 0
                 
     def step(self,Input):
         self.Input = np.array(Input)
