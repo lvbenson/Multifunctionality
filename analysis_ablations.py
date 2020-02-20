@@ -62,9 +62,9 @@ total_trials_LW = trials_theta_LW*trials_omega_LW
 def single_neuron_ablations(genotype):
     nn = ffann.ANN(nI,nH1,nH2,nO)
     # Task 1
-    ip_fit = np.zeros(nI+nH1+nH2)
+    ip_fit = np.zeros(nI+nH1+nH2) #empty array of all neurons 
     body = invpend.InvPendulum()
-    for i in range(nI+nH1+nH2): #iterates through each neuron (20 neurons)
+    for i in range(nI+nH1+nH2): #iterates through each neuron (20 neurons), creating a new network, each ablating through a different neuron 
         fit = 0.0
         nn.setParameters(genotype,WeightRange,BiasRange)
         nn.ablate(i)
@@ -76,9 +76,13 @@ def single_neuron_ablations(genotype):
                     nn.step(np.concatenate((body.state(),np.zeros(4),np.zeros(3))))
                     f = body.step(stepsize_IP, np.array([nn.output()[0]]))
                     fit += f
-        fit = fit/(duration_IP*total_trials_IP)
+                    
+        
+        fit = abs(fit/(duration_IP*total_trials_IP))
         fit = (fit+7.65)/7 # Normalize to run between 0 and 1
-        ip_fit[i]=fit
+        ip_fit[i]=fit #adds each neuron to matrix
+    #print('ip fit:',ip_fit)
+    
         
     # Task 2
     cp_fit = np.zeros(nI+nH1+nH2)
@@ -101,10 +105,16 @@ def single_neuron_ablations(genotype):
                             fit += f
         fit = fit/(duration_CP*total_trials_CP)
         cp_fit[i]=fit
+    print('cp fit:',cp_fit)
+    
+        
+        
+        
     #Task 3
     lw_fit = np.zeros(nI+nH1+nH2)
     body = leggedwalker.LeggedAgent(0.0,0.0)
     for i in range(nI+nH1+nH2):
+        #print("task3,each neuron",i)
         fit = 0.0
         nn.setParameters(genotype,WeightRange,BiasRange)
         nn.ablate(i)
@@ -116,18 +126,55 @@ def single_neuron_ablations(genotype):
                 for t in time_LW:
                     nn.step(np.concatenate((np.zeros(3),np.zeros(4),body.state())))
                     body.step(stepsize_LW, np.array(nn.output()[2:5]))
-                    fit += body.cx/duration_LW
-        fit = (fit/total_trials_LW)/MaxFit
+                fit += body.cx/duration_LW
+        fit = abs((fit/total_trials_LW)/MaxFit)
+        #print(fit)
         lw_fit[i]=fit
+    #print('lw fit:',lw_fit)
         
    #print('ip fit',ip_fit)
    #print('cp fit',cp_fit)
    #print('lw fit',lw_fit)
+# =============================================================================
+#     X = np.arange(3)
+#     fig = plt.figure()
+#     ax = fig.add_axes([0,0,1,1])
+# # 
+#     ax.bar(X + 0.00, ip_fit, color = 'b', width = 0.25)
+#     ax.bar(X + 0.25, cp_fit, color = 'g', width = 0.25)
+#     ax.bar(X + 0.50, lw_fit, color = 'r', width = 0.25)
+# =============================================================================
+    
+# =============================================================================
+    plt.plot(ip_fit, label='invpend')
+    plt.plot(cp_fit, label='cartpole')
+    plt.plot(lw_fit, label='leggedwalker')
+    plt.legend()
+    plt.show()
+# =============================================================================
+    
     return ip_fit,cp_fit,lw_fit
 
+    
 
 bi = np.load('best_ind.npy')
 ip,cp,lw = single_neuron_ablations(bi)
+
+
+
+
+# =============================================================================
+# X = np.arange(4)
+# fig = plt.figure()
+# ax = fig.add_axes([0,0,1,1])
+# 
+# ax.bar(X + 0.00, ip, color = 'b', width = 0.25)
+# ax.bar(X + 0.25, cp, color = 'g', width = 0.25)
+# ax.bar(X + 0.50, lw, color = 'r', width = 0.25)
+# plt.show()
+# =============================================================================
+
+
 
 # 
 # plt.scatter(ip, cp, c=lw,cmap='Greens')
