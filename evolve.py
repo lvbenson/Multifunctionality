@@ -60,12 +60,12 @@ omega_range_LW = np.linspace(-1.0, 1.0, num=trials_omega_LW)
 total_trials_LW = trials_theta_LW * trials_omega_LW
 
 # EA Params
-popsize = 100
+popsize = 2
 genesize = (nI*nH1) + (nH1*nH2) + (nH1*nO) + nH1 + nH2 + nO # 115 parameters
 recombProb = 0.5
 mutatProb = 0.01 # 1/genesize # 1/g = 0.0086 we can make it 0.01 because with 1/g, avg seemed to trail close to best.
 demeSize = popsize
-generations = 300 # With 150 (17hours), lots of progress, but more possible easily (with 300, 34hours);
+generations = 2 # With 150 (17hours), lots of progress, but more possible easily (with 300, 34hours);
 boundaries = 0
 tournaments = generations * popsize
 
@@ -129,15 +129,23 @@ def fitnessFunction(genotype):
 
 
 # =============================================================================
-reps = 20
+reps = 2
 for r in range(reps):
     ga = mga.Microbial(fitnessFunction, popsize, genesize, recombProb, mutatProb, demeSize, generations, boundaries)
     ga.run(tournaments)
-    ga.showFitness()
     af,bf,bi = ga.fitStats()
-    np.save('average_history', ga.avgHistory)
-    np.save('best_history', ga.bestHistory)
-    np.save('best_individual', bi)
+    np.save('average_history_'+str(r), ga.avgHistory)
+    np.save('best_history_'+str(r), ga.bestHistory)
+    np.save('best_individual_'+str(r), bi)
+    plt.plot(ga.bestHistory,'b')
+    plt.plot(ga.avgHistory,'r')
+    plt.plot((ga.bestHistory,ga.avgHistory),((str(r)),str(r)))
+    plt.xlabel("Generations")
+    plt.ylabel("Fitness")
+    plt.title("Best and average fitness")
+plt.show()
+    
+    
 # 
 # =============================================================================
     
