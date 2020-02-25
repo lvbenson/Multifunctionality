@@ -5,6 +5,7 @@ import cartpole             #Task 2
 import leggedwalker         #Task 3
 
 import numpy as np
+import matplotlib.pyplot as plt
 #import sys
 
 #id = int(sys.argv[1])
@@ -59,12 +60,12 @@ omega_range_LW = np.linspace(-1.0, 1.0, num=trials_omega_LW)
 total_trials_LW = trials_theta_LW * trials_omega_LW
 
 # EA Params
-popsize = 20
+popsize = 100
 genesize = (nI*nH1) + (nH1*nH2) + (nH1*nO) + nH1 + nH2 + nO # 115 parameters
 recombProb = 0.5
 mutatProb = 0.01 # 1/genesize # 1/g = 0.0086 we can make it 0.01 because with 1/g, avg seemed to trail close to best.
 demeSize = popsize
-generations = 20 # With 150 (17hours), lots of progress, but more possible easily (with 300, 34hours);
+generations = 300 # With 150 (17hours), lots of progress, but more possible easily (with 300, 34hours);
 boundaries = 0
 tournaments = generations * popsize
 
@@ -82,9 +83,11 @@ def fitnessFunction(genotype):
             for t in time_IP:
                 nn.step(np.concatenate((body.state(),np.zeros(4),np.zeros(3)))) #arrays for inputs for each task
                 f = body.step(stepsize_IP, np.array([nn.output()[0]]))
+                if f < 0:
+                    f = 0
                 fit += f
     fitness1 = fit/(duration_IP*total_trials_IP)
-    fitness1 = abs((fitness1+7.65)/7) # Normalize to run between 0 and 1
+    fitness1 = ((fitness1+7.65)/7) # Normalize to run between 0 and 1
     #print('fitness1',fitness1)
 
     # Task 2
@@ -117,33 +120,42 @@ def fitnessFunction(genotype):
                 nn.step(np.concatenate((np.zeros(3),np.zeros(4),body.state())))
                 body.step(stepsize_LW, np.array(nn.output()[2:5]))
             fit += body.cx/duration_LW
-    fitness3 = abs((fit/total_trials_LW)/MaxFit)
+            if fit < 0:
+                fit = 0
+    fitness3 = ((fit/total_trials_LW)/MaxFit)
     #print('fitness3',fitness3)
     #print('overallfitness',fitness1*fitness2*fitness3)
     return fitness1*fitness2*fitness3
 
 
 # =============================================================================
-# reps = 10
-# for r in range(reps):
-#     ga = mga.Microbial(fitnessFunction, popsize, genesize, recombProb, mutatProb, demeSize, generations, boundaries)
-#     ga.run(tournaments)
-#     ga.showFitness()
-#     af,bf,bi = ga.fitStats()
+reps = 20
+for r in range(reps):
+    ga = mga.Microbial(fitnessFunction, popsize, genesize, recombProb, mutatProb, demeSize, generations, boundaries)
+    ga.run(tournaments)
+    ga.showFitness()
+    af,bf,bi = ga.fitStats()
+    np.save('average_history', ga.avgHistory)
+    np.save('best_history', ga.bestHistory)
+    np.save('best_individual', bi)
 # 
 # =============================================================================
     
 # Evolve and visualize fitness over generations
-ga = mga.Microbial(fitnessFunction, popsize, genesize, recombProb, mutatProb, demeSize, generations, boundaries)
-ga.run(tournaments)
-ga.showFitness()
+# =============================================================================
+# ga = mga.Microbial(fitnessFunction, popsize, genesize, recombProb, mutatProb, demeSize, generations, boundaries)
+# ga.run(tournaments)
+# ga.showFitness()
+# =============================================================================
 
 # Get best evolved network and show its activity
-af,bf,bi = ga.fitStats()
-
-#np.save('average_history', ga.avgHistory)
-#np.save('best_history', ga.bestHistory)
-np.save('best_ind', bi)
+#af,bf,bi = ga.fitStats()
+# =============================================================================
+# 
+# np.save('average_history', ga.avgHistory)
+# np.save('best_history', ga.bestHistory)
+# np.save('best_individual', bi)
+# =============================================================================
 
 # =============================================================================
 # np.save('average_history_'+str(id)+'.npy',ga.avgHistory)
