@@ -11,7 +11,7 @@ import invpend              #Task 1
 import cartpole             #Task 2
 import leggedwalker         #Task 3
 import matplotlib.pyplot as plt
-import sys
+#import sys
 
 
 #dir = str(sys.argv[1])
@@ -75,26 +75,37 @@ def performance_analysis(genotype):
 
     # Task 1
     body = invpend.InvPendulum()
-    fit = 0.0
+    fit_cum = 0.0
+    fip = np.zeros(x,y)
     total_steps = len(time_IP)*total_trials_IP
+    i = 0
     for theta in theta_range_IP:
+        j = 0 
         for theta_dot in thetadot_range_IP:
             body.theta = theta
             body.theta_dot = theta_dot
+            fit=0.0
             for t in time_IP:
                 nn.step(np.concatenate((body.state(),np.zeros(4),np.zeros(3)))) #arrays for inputs for each task
                 Hidden1_Avg[0] += nn.Hidden1Activation/total_steps
                 Hidden2_Avg[0] += nn.Hidden2Activation/total_steps
                 f = body.step(stepsize_IP, np.array([nn.output()[0]]))
-                
                 fit += f
-    fitness1 = fit/(duration_IP*total_trials_IP)
+            fip[i][j] = fit/duration_IP
+            fit_cum += fit/duration_IP
+            j += 1
+        i += 1
+    fitness1 = fit/total_trials_IP
     fitness1 = (fitness1+7.65)/7 # Normalize to run between 0 and 1
     np.save('ip_hidden_1', Hidden1_Avg[0])
     np.save('ip_hidden_2', Hidden2_Avg[0])
 
 
     # Task 2
+    
+    #for behaviors: make i and j: theta and theta_dot
+    #x and xdot == make those values the average of all visuzliations
+    
     body = cartpole.Cartpole()
     fit = 0.0
     total_steps = len(time_CP)*total_trials_CP
@@ -134,7 +145,7 @@ def performance_analysis(genotype):
     fitness3 = (fit/total_trials_LW)/MaxFit
     np.save('lw_hidden_1', Hidden1_Avg[2])
     np.save('lw_hidden_2', Hidden2_Avg[2])
-    return fitness1,fitness2,fitness3,Hidden1_Avg,Hidden2_Avg
+    return fitness1,fitness2,fitness3,Hidden1_Avg,Hidden2_Avg,fip
 
 def single_neuron_ablations_infolesion(genotype):
     nn = ffann.ANN(nI,nH1,nH2,nO)
@@ -143,17 +154,17 @@ def single_neuron_ablations_infolesion(genotype):
     ip_fit = np.zeros(nH1+nH2)
     body = invpend.InvPendulum()
     index = 0
-    for neuron in range(nI,nI+nH1+nH2): #iterates through each neuron (20 neurons)
+    for layer in range(2):
+    for neuron in range(nH1): #iterates through each neuron (20 neurons)
         fit = 0.0
         nn.setParameters(genotype,WeightRange,BiasRange)
-        
-        nn.ablate_infolesion_ip(neuron)
+        #nn.ablate_infolesion_ip(neuron)
         for theta in theta_range_IP:
             for theta_dot in thetadot_range_IP:
                 body.theta = theta
                 body.theta_dot = theta_dot
                 for t in time_IP:
-                    nn.step(np.concatenate((body.state(),np.zeros(4),np.zeros(3))))
+                    nn.step(np.concatenate((body.state(),np.zeros(4),np.zeros(3))),neuron,layer,Hidden1_Avg[0][neuron])
                     f = body.step(stepsize_IP, np.array([nn.output()[0]]))
                     fit += f
         fit = fit/(duration_IP*total_trials_IP)
@@ -232,7 +243,8 @@ bf = np.load('best_history_0.npy')
 bi = np.load('best_individual_0.npy')
 #if bf[-1]>0.00005:
 print('best overall fitness',bf[-1])
-f1,f2,f3,H1,H2=performance_analysis(bi)
+f1,f2,f3,H1,H2,fip=performance_analysis(bi)
+plt.imshpw(fip)
 ipf,cpf,lwf=single_neuron_ablations_infolesion(bi)
 ipp=ipf/f1
 cpp=cpf/f2
