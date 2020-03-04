@@ -10,7 +10,7 @@ import sys
 
 #dir = str(sys.argv[1])
 #reps = int(sys.argv[1])
-reps = 5
+reps = 1
 
 # ANN Params
 nI = 3+4+3
@@ -25,7 +25,7 @@ duration_IP = 10
 stepsize_IP = 0.05
 duration_CP = 50
 stepsize_CP = 0.05
-duration_LW = 220.0
+duration_LW = 220.0 #durations are reducible 
 stepsize_LW = 0.1
 time_IP = np.arange(0.0,duration_IP,stepsize_IP)
 time_CP = np.arange(0.0,duration_CP,stepsize_CP)
@@ -35,7 +35,7 @@ MaxFit = 0.627 #Leggedwalker
 
 # Fitness initialization ranges
 #Inverted Pendulum
-trials_theta_IP = 6
+trials_theta_IP = 6 #starting conditions are reducible  
 trials_thetadot_IP = 6
 total_trials_IP = trials_theta_IP*trials_thetadot_IP
 theta_range_IP = np.linspace(-np.pi, np.pi, num=trials_theta_IP)
@@ -69,57 +69,126 @@ def performance_analysis(genotype):
 
     # Task 1
     body = invpend.InvPendulum()
-    fit = 0.0
+    fit_cum = 0.0
+    s = (6,6)
+    fip = np.zeros(s) #behavior matrix
     total_steps = len(time_IP)*total_trials_IP
+    i = 0
     for theta in theta_range_IP:
+        j = 0
         for theta_dot in thetadot_range_IP:
             body.theta = theta
             body.theta_dot = theta_dot
+            fit = 0.0
             for t in time_IP:
                 nn.step(np.concatenate((body.state(),np.zeros(4),np.zeros(3)))) #arrays for inputs for each task
                 Hidden1_Avg[0] += nn.Hidden1Activation/total_steps
                 Hidden2_Avg[0] += nn.Hidden2Activation/total_steps
                 f = body.step(stepsize_IP, np.array([nn.output()[0]]))
                 fit += f
-    fitness1 = fit/(duration_IP*total_trials_IP)
+                fit_cum += f
+        
+            fit_cum = fit_cum/duration_IP
+            fip[i][j] = fit/duration_IP
+            j += 1
+        i += 1
+    fitness1 = fit_cum/(duration_IP*total_trials_IP)
     fitness1 = (fitness1+7.65)/7 # Normalize to run between 0 and 1
+    #print('ip hidden1',Hidden1_Avg[0])
+    #print('ip hidden2',Hidden2_Avg[0])
+    #print(fip)
+    fig,ax = plt.subplots()
+    ax.matshow(fip, cmap=plt.cm.Blues)
+    fip = np.around(fip, decimals=2)
+    for o in range(i):
+        for n in range(j):
+            c = fip[n,o]
+            ax.text(o,n,str(c),va='center',ha='center')
+    plt.title('Theta VS theta_dot Behavior: IP',fontsize=13)
+    plt.show()
+
+
 
     # Task 2
     body = cartpole.Cartpole()
-    fit = 0.0
+    fit_cum = 0.0
+    s = (2,2)
+    fip = np.zeros(s)
     total_steps = len(time_CP)*total_trials_CP
+    i = 0
     for theta in theta_range_CP:
+        j = 0
         for theta_dot in thetadot_range_CP:
+            
             for x in x_range_CP:
                 for x_dot in xdot_range_CP:
                     body.theta = theta
                     body.theta_dot = theta_dot
                     body.x = x
                     body.x_dot = x_dot
+                    fit = 0.0
                     for t in time_CP:
                         nn.step(np.concatenate((np.zeros(3),body.state(),np.zeros(3))))
                         Hidden1_Avg[1] += nn.Hidden1Activation/total_steps
                         Hidden2_Avg[1] += nn.Hidden2Activation/total_steps
                         f = body.step(stepsize_CP, np.array([nn.output()[1]]))
+                        
+                        fit_cum += f
                         fit += f
-    fitness2 = fit/(duration_CP*total_trials_CP)
+                    
+                    #fit_cum = fit_cum/duration_CP
+                    fip[i][j] = fit/duration_CP
+            j += 1
+        i += 1
+    fitness2 = fit_cum/(duration_CP*total_trials_CP)
+    fig,ax = plt.subplots()
+    ax.matshow(fip, cmap=plt.cm.Blues)
+    fip = np.around(fip, decimals=2)
+    for o in range(i):
+        for n in range(j):
+            c = fip[n,o]
+            ax.text(o,n,str(c),va='center',ha='center')
+    plt.title('Theta VS theta_dot Behavior: CP',fontsize=13)
+    plt.show()
+
 
     #Task 3
     body = leggedwalker.LeggedAgent(0.0,0.0)
-    fit = 0.0
+    fit_cum = 0.0
+    s = (3,3)
+    fip = np.zeros(s)
     total_steps = len(time_LW)*total_trials_LW
+    i = 0
     for theta in theta_range_LW:
+        j = 0
         for omega in omega_range_LW:
             body.reset()
             body.angle = theta
             body.omega = omega
+            fit = 0.0
             for t in time_LW:
                 nn.step(np.concatenate((np.zeros(3),np.zeros(4),body.state())))
                 Hidden1_Avg[2] += nn.Hidden1Activation/total_steps
                 Hidden2_Avg[2] += nn.Hidden2Activation/total_steps
                 body.step(stepsize_LW, np.array(nn.output()[2:5]))
-            fit += body.cx/duration_LW
-    fitness3 = (fit/total_trials_LW)/MaxFit
+                
+            fit_cum += body.cx/duration_LW
+            fip[i][j] += body.cx/duration_LW
+            j += 1
+        i += 1
+    fitness3 = (fit_cum/total_trials_LW)/MaxFit
+    
+    fig,ax = plt.subplots()
+    ax.matshow(fip, cmap=plt.cm.Blues)
+    fip = np.around(fip, decimals=2)
+    for o in range(i):
+        for n in range(j):
+            c = fip[n,o]
+            ax.text(o,n,str(c),va='center',ha='center')
+    plt.title('Theta VS Omega Behavior: LW',fontsize=13)
+    plt.show()
+
+    
     return fitness1,fitness2,fitness3,Hidden1_Avg,Hidden2_Avg
 
 def single_neuron_ablations(genotype):
@@ -179,7 +248,7 @@ def single_neuron_ablations(genotype):
     body = leggedwalker.LeggedAgent(0.0,0.0)
     index = 0
     for neuron in range(nI,nI+nH1+nH2):
-        print(neuron)
+        #print(neuron)
         fit = 0.0
         nn.setParameters(genotype,WeightRange,BiasRange)
         nn.ablate(neuron)
@@ -202,33 +271,94 @@ def single_neuron_ablations(genotype):
 
 
 #gens = len(np.load(dir+"/average_history_"+dir+"_0.npy"))
-gens = len(np.load('average_history.npy'))
+gens = len(np.load('average_history_1.npy'))
 #gs=len(np.load(dir+"/best_individual_"+dir+"_0.npy"))
-gs = len(np.load('best_individual.npy'))
+gs = len(np.load('best_individual_1.npy'))
 af = np.zeros((reps,gens))
 bf = np.zeros((reps,gens))
 bi = np.zeros((reps,gs))
-for i in range(reps):
+#for i in range(reps):
     #af[i] = np.load(dir+"/average_history_"+dir+"_"+str(i)+".npy")
-    af[i] = np.load('average_history.npy')
+af = np.load('average_history_1.npy')
     #bf[i] = np.load(dir+"/best_history_"+dir+"_"+str(i)+".npy")
-    bf[i] = np.load('best_history.npy')
+bf = np.load('best_history_1.npy')
     #bi[i] = np.load(dir+"/best_individual_"+dir+"_"+str(i)+".npy")
-    bi[i] = np.load('best_individual.npy')
-    if bf[i][-1]>0.0005:
-        print(i,bf[i][-1])
-        f1,f2,f3,H1,H2=performance_analysis(bi[i])
-        ipf,cpf,lwf=single_neuron_ablations(bi[i])
-        ipp=ipf/f1
-        cpp=cpf/f2
-        lwp=lwf/f3
-        plt.plot(ipp,'ro')
-        plt.plot(cpp,'go')
-        plt.plot(lwp,'bo')
-        plt.xlabel("Interneurons")
-        plt.ylabel("Relative performance")
-        plt.title("Interneuron Lesions")
-        plt.show()
+bi = np.load('best_individual_1.npy')
+#if bf[-1]>0.00005:
+print('best overall fitness',bf[-1])
+f1,f2,f3,H1,H2=performance_analysis(bi)
+#plt.imshow(fip) #visualize behavior)
+ipf,cpf,lwf=single_neuron_ablations(bi)
+ipp=ipf/f1
+cpp=cpf/f2
+lwp=lwf/f3
+plt.plot(ipp,'ro') #ip is red
+plt.plot(cpp,'go') #cp is green
+plt.plot(lwp,'bo') #lw is blue
+plt.xlabel("Interneurons")
+plt.ylabel("Relative performance")
+plt.title("Interneuron Lesions")
+plt.show()
+
+
+#numbers of neurons that affect each task, followed by number of neurons affecting two tasks,
+#then number of neurons that affect all three tasks
+
+
+ip_index = 0
+cp_index = 0
+lw_index = 0
+ip_cp_index = 0
+ip_lw_index = 0
+cp_lw_index = 0
+three_index = 0
+for (ip_neuron, cp_neuron, lw_neuron) in zip(ipp,cpp,lwp):
+    if ip_neuron < 1:                   #ip task neurons
+        ip_index = ip_index + 1
+    if cp_neuron < 1:                   #cp task neurons
+        cp_index = cp_index + 1
+        #print('ip neuron:',ip_neuron)
+    if lw_neuron < 1:                   #lw task neurons
+        lw_index = lw_index + 1
+        #print('lw neuron:',lw_neuron)
+    if (ip_neuron < 1) and (cp_neuron < 1): #ip AND cp task neurons
+        ip_cp_index = ip_cp_index + 1
+    if (ip_neuron < 1) and (lw_neuron < 1): #ip AND lw task neurons
+        ip_lw_index = ip_lw_index + 1
+    if (cp_neuron < 1) and (lw_neuron < 1): #cp AND lw task neurons
+        cp_lw_index + cp_lw_index + 1
+    if (ip_neuron < 1) and (cp_neuron < 1) and (lw_neuron < 1): #all 3 task neurons
+        three_index = three_index + 1
+        
+print('ip neurons:',ip_index)
+print('cp neurons:',cp_index)
+print('lw neurons:',lw_index)
+print('ip and cp neurons:',ip_cp_index)
+print('ip and lw neurons:',ip_lw_index)
+print('cp and lw neurons:',cp_lw_index)
+print('three task neurons:',three_index)
+
+#indicates WHICH neurons overlap:
+
+
+    
+
+
+    
+
+
+            
+    
+
+
+        
+#number of neurons that solve 2 tasks:
+        
+
+
+
+
+
 plt.plot(af.T,'y')
 plt.plot(bf.T,'b')
 plt.xlabel("Generations")
